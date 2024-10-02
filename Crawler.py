@@ -6,7 +6,7 @@ import time
 # Constants
 BASE_URL = "https://www.gutenberg.org"
 BOOKS_URL = f"{BASE_URL}/browse/scores/top"
-DOWNLOAD_FOLDER = "gutenberg_books"
+DOWNLOAD_FOLDER = "Benchmark/gutenberg_books"
 
 # Create download folder if it doesn't exist
 if not os.path.exists(DOWNLOAD_FOLDER):
@@ -63,3 +63,5 @@ def crawl_books(num_books):
             break
         download_book(book_id)
         time.sleep(1)  # Be polite to the server, avoid overwhelming it
+
+crawl_books(10)
