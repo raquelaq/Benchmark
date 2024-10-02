@@ -63,7 +63,3 @@ def crawl_books(num_books):
             break
         download_book(book_id)
         time.sleep(1)  # Be polite to the server, avoid overwhelming it
-
-if __name__ == "__main__":
-    num_books = int(input("How many books would you like to download? "))
-    crawl_books(num_books)
