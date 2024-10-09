@@ -6,7 +6,7 @@ import time
 # Constants
 BASE_URL = "https://www.gutenberg.org"
 BOOKS_URL = f"{BASE_URL}/browse/scores/top"
-DOWNLOAD_FOLDER = "Benchmark/gutenberg_books"
+DOWNLOAD_FOLDER = "gutenberg_books"
 
 # Create download folder if it doesn't exist
 if not os.path.exists(DOWNLOAD_FOLDER):
@@ -27,31 +27,27 @@ def get_book_links():
     return book_links
 
 def download_book(book_id):
-    """Download the .txt version of the book, or fall back to .html if .txt isn't available."""
-    txt_url = f"https://gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt"
-    html_url = f"https://gutenberg.org/cache/epub/{book_id}/pg{book_id}.html"
+    """Download the .txt version of the book, or fall back to .html, .epub, or .mobi if not available."""
+    formats = {
+        'txt': f"https://gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt",
+        'html': f"https://gutenberg.org/cache/epub/{book_id}/pg{book_id}.html",
+        'epub': f"https://gutenberg.org/cache/epub/{book_id}/pg{book_id}.epub",
+        'mobi': f"https://gutenberg.org/cache/epub/{book_id}/pg{book_id}.mobi"
+    }
 
-    # Try downloading the .txt file first
-    response = requests.get(txt_url)
-    
-    if response.status_code == 200:
-        # Save the .txt file
-        book_path = os.path.join(DOWNLOAD_FOLDER, f"{book_id}.txt")
-        with open(book_path, 'w', encoding='utf-8') as f:
-            f.write(response.text)
-        print(f"Downloaded book {book_id} in plain text format.")
-    
-    else:
-        # If the .txt file is not available, try the .html file
-        response = requests.get(html_url)
+    # Try each format
+    for format, url in formats.items():
+        print(f"Attempting to download book {book_id} from {url}")
+        response = requests.get(url)
         if response.status_code == 200:
-            # Save the .html file
-            book_path = os.path.join(DOWNLOAD_FOLDER, f"{book_id}.html")
-            with open(book_path, 'w', encoding='utf-8') as f:
-                f.write(response.text)
-            print(f"Downloaded book {book_id} in HTML format.")
-        else:
-            print(f"Book {book_id} is not available in plain text or HTML format.")
+            # Save the file in the corresponding format
+            book_path = os.path.join(DOWNLOAD_FOLDER, f"{book_id}.{format}")
+            with open(book_path, 'wb') as f:  # 'wb' for binary formats
+                f.write(response.content)
+            print(f"Downloaded book {book_id} in {format} format.")
+            return  # Exit the function once a format is successfully downloaded
+    
+    print(f"Book {book_id} is not available in any of the supported formats.")
 
 def crawl_books(num_books):
     """Crawls through the Project Gutenberg top books and downloads a specified number of them."""
@@ -62,6 +58,4 @@ def crawl_books(num_books):
         if i >= num_books:
             break
         download_book(book_id)
-        time.sleep(1)  # Be polite to the server, avoid overwhelming it
-
-crawl_books(10)
+        time.sleep(1)
