@@ -10,13 +10,14 @@ OUTPUT_JSON = "processed_books.json"
 STOPWORDS = set(stopwords.words('english'))  # Stopwords set to filter useless words
 
 class Book:
-    def __init__(self, title, author, date, language, credits, words):
+    def __init__(self, title, author, date, language, credits, words, ebook_number):
         self.title = title
         self.author = author
         self.date = date
         self.language = language
         self.credits = credits
         self.words = words
+        self.ebook_number = ebook_number
 
     def to_dict(self):
         """Converts the Book object to a dictionary for JSON serialization."""
@@ -26,18 +27,24 @@ class Book:
             'date': self.date,
             'language': self.language,
             'credits': self.credits,
+            'ebook_number': self.ebook_number,
             'words': list(self.words)  # Convert set to list for JSON serialization
         }
 
 def clean_text(text):
-    """Remove stopwords, punctuation and return a list of unique important words."""
+    """Remove stopwords, punctuation, underscores, and return a list of unique important words."""
     # Remove punctuation and split the text into words
     words = re.findall(r'\b\w+\b', text.lower())
+    
+    # Remove underscores from the beginning, end, and middle of each word
+    words = [word.replace('_', '') for word in words]
     
     # Filter out stopwords and words with length <= 2 (to exclude overly short words)
     meaningful_words = {word for word in words if word not in STOPWORDS and len(word) > 2}
     
     return meaningful_words  # Return unique words as a set
+
+
 
 def extract_metadata(book_content):
     """Extracts the metadata (title, author, release date, language, credits) from the book content."""
@@ -46,13 +53,16 @@ def extract_metadata(book_content):
     date = re.search(r'Release date:\s*(.+)', book_content)
     language = re.search(r'Language:\s*(.+)', book_content)
     credits = re.search(r'Credits:\s*(.+)', book_content)
-    
+    ebook_number = re.search(r'eBook (#\d+)', book_content)
+    year = re.search(r'(\d{4})', date.group(1))
+
     return {
-        'title': title.group(1).strip() if title else 'Unknown',
-        'author': author.group(1).strip() if author else 'Unknown',
-        'date': date.group(1).strip() if date else 'Unknown',
-        'language': language.group(1).strip() if language else 'Unknown',
-        'credits': credits.group(1).strip() if credits else 'Unknown'
+        'title': title.group(1).strip() if title else 'Unknown Title',
+        'author': author.group(1).strip() if author else 'Unknown Author',
+        'date': year.group(1).strip() if year else 'Unknown Date',
+        'language': language.group(1).strip() if language else 'Unknown Language',
+        'credits': credits.group(1).strip() if credits else 'Unknown Credits',
+        'ebook_number': ebook_number.group(1).strip() if ebook_number else 'Unknown eBook Number'
     }
 
 def process_book(filepath):
@@ -77,6 +87,7 @@ def process_book(filepath):
         date=metadata['date'],
         language=metadata['language'],
         credits=metadata['credits'],
+        ebook_number=metadata['ebook_number'],
         words=words
     )
     
