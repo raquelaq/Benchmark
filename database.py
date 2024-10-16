@@ -67,4 +67,4 @@ for file in files_txt:
                 }
                 collection.insert_one(new_entry)
 
-        print("Files processed and inserted into MongoDB.")
+        print("Files processed and inserted into MongoDB. ")
