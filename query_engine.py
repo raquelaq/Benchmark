@@ -7,3 +7,6 @@ class QueryEngine:
 
     def query(self, term):
         return self.inverted_index.get(term, [])
+        
+
+

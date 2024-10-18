@@ -5,17 +5,35 @@ import query_engine
 import json
 
 def main():
-
+    # Define constants
     BOOKS_FOLDER = "gutenberg_books"
-    #crawler.crawl_books(20)
-    #all_books = cleaner.process_all_books(BOOKS_FOLDER)
-    #cleaner.save_books_to_json(all_books, "processed_books.json")
-    #index = indexer.create_inverted_index("processed_books.json", "hashmap")
-    #metadata_index = indexer.create_metadata_index("processed_books.json")
+    PROCESSED_JSON = "processed_books.json"
 
-    # Query the inverted index
+    # Step 1: Crawl books
+    print("Crawling books...")
+    crawler.crawl_books(20)  # Make sure this function works as intended
+
+    # Step 2: Process all books and save to JSON
+    print("Processing books...")
+    all_books = cleaner.process_all_books(BOOKS_FOLDER)
+    cleaner.save_books_to_json(all_books, PROCESSED_JSON)
+
+    # Step 3: Create inverted index with hashmap
+    print("Creating inverted index using hashmap...")
+    index_hashmap = indexer.create_inverted_index(PROCESSED_JSON, "hashmap")
+    
+    # Step 4: Create inverted index with trie
+    print("Creating inverted index using trie...")
+    index_trie = indexer.create_inverted_index(PROCESSED_JSON, "trie")
+
+    # Step 5: Create metadata index
+    print("Creating metadata index...")
+    metadata_index = indexer.create_metadata_index(PROCESSED_JSON)
+
+    # Step 6: Query the inverted index
+    print("Initializing query engine...")
     engine = query_engine.QueryEngine('inverted_index.json')
-    term = "grasshopper"
+    term = "grasshopper"  # Change this term to test different queries
     results = engine.query(term)
     print(f"Results for the term '{term}':")
     for result in results:
