@@ -32,12 +32,12 @@ def main():
 
     # Step 6: Query the inverted index
     print("Initializing query engine...")
-    engine = query_engine.QueryEngine('inverted_index.json')
-    term = "grasshopper"  # Change this term to test different queries
-    results = engine.query(term)
-    print(f"Results for the term '{term}':")
-    for result in results:
-        print(result)
+    engine = query_engine.QueryEngine('inverted_index_hashmap.json', 'inverted_index_trie.json', 'metadata_index.json')
+    engine.choose_index('hashmap')
+    book_ids = engine.query('grasshoppers')
+    filtered_books = engine.filter_metadata(book_ids, {"Author": "william shakespeare", "Year": "1994", "Language": "english"})
+    print(f'Books that contain the term: {book_ids}')
+    print(f'Books that also match the metadata: {filtered_books}')
 
 if __name__ == "__main__":
     main()
